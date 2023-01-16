@@ -1,5 +1,6 @@
 const url = require('url')
 const path = require('path')
+const fs = require('fs')
 
 function addImageEvents () {
 	const thumbs = document.querySelectorAll('div.photo_li')
@@ -8,11 +9,13 @@ function addImageEvents () {
 			changeImage(this)
 		});
 	}
+
 }
 
 function changeImage (node) {
+	const image_displayed = document.getElementById('img-displayed-main')
 	if(!node){
-		document.getElementById('img-displayed_main').src = "../assets/img/notfound.png"
+		image_displayed.src = "../assets/img/upload.png"
 		return
 	}
 	const selected = document.querySelector('div.selected')
@@ -21,12 +24,15 @@ function changeImage (node) {
 	}
 	console.log(node.classList)
 	node.classList.add('selected')
-	document.getElementById('img-displayed_main').src = node.querySelector('img').src
+	image_displayed.src = node.querySelector('img').src
+	console.log(image_displayed.src)
+	window.scrollTo(0,0)
+	resetFilters()
 }
 
 function selectFirstImage (){
-	const image = document.querySelector('div.photo_li:not(.hidden)')
-	changeImage(image)
+	const first_image = document.querySelector('div.photo_li:not(.hidden)')
+	changeImage(first_image)
 }
 
 function searchImageEvents () {
@@ -54,7 +60,7 @@ function searchImageEvents () {
 			document.querySelectorAll("div.photo_li").forEach((element) => {element.classList.remove('hidden')})
 			document.querySelector('div.selected').classList.remove('selected')
 			document.getElementById('card-img-0').classList.add('selected')
-			document.getElementById('img-displayed_main').src = document.getElementById('img-displayed_0').src
+			document.getElementById('img-displayed-main').src = document.getElementById('img-displayed_0').src
 		}
 	})
 }
@@ -71,12 +77,12 @@ function ApplyFilterImage (){
 	const gradientFilter = document.getElementById('gradient_filter')
 	const selectFilter = document.getElementById('select_filter')
 	if(selectFilter.value != "no_filter") {
-		document.getElementById('img-displayed_main').className = ""
-		document.getElementById('img-displayed_main').classList.add('img-fluid',selectFilter.value + "-" + gradientFilter.value)
-		console.log(document.getElementById('img-displayed_main').className)
+		document.getElementById('img-displayed-main').className = ""
+		document.getElementById('img-displayed-main').classList.add('img-fluid',selectFilter.value + "-" + gradientFilter.value)
+		console.log(document.getElementById('img-displayed-main').className)
 	}else{
-		document.getElementById('img-displayed_main').className = ""
-		document.getElementById('img-displayed_main').classList.add('img-fluid')
+		document.getElementById('img-displayed-main').className = ""
+		document.getElementById('img-displayed-main').classList.add('img-fluid')
 	}
 }
 
@@ -86,6 +92,13 @@ function changeGradientFilter (){
 		document.getElementById('gradient_filter_value').innerHTML = this.value
 		ApplyFilterImage()
 	})
+}
+
+function resetFilters(){
+	document.getElementById('gradient_filter').value = 0
+	document.getElementById('select_filter').value = "no_filter"
+	document.getElementById('gradient_filter_value').innerHTML = 0
+	ApplyFilterImage()
 }
 
 function clearImages (){
@@ -109,13 +122,25 @@ function loadImages (images){
 
 }
 
+function saveImage(filePath, extension, callback) {
+	const canvas = document.getElementById('canvas')
+	const base64Canvas = canvas.toDataURL(`image/${extension.slice(1)}`).split(';base64,')[1];
+	fs.writeFile(filePath, base64Canvas, 'base64', callback)
+}
+
+function printFile() {
+	//currently as 13 jan 2023 there's a bug present for this function not sure in chronium
+	window.print()
+}
 module.exports = {
     addImageEvents: addImageEvents,
     changeImage: changeImage,
     selectFirstImage: selectFirstImage,
     searchImageEvents: searchImageEvents,
+	clearImages: clearImages,
     SelectFilterImage: SelectFilterImage,
     changeGradientFilter: changeGradientFilter,
-    clearImages: clearImages,
-    loadImages: loadImages
+    loadImages: loadImages,
+	saveImage: saveImage,
+	printFile: printFile
 }

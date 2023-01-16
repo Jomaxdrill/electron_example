@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferences Image</title>
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link href="../assets/css/filters.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="prefs-window/prefs-frontend.js"></script>
+</head>
+
+<body>
+    <div class="window">
+        <!-- <header class="toolbar toolbar-header">
+            <h1 class="title">Preferences</h1>
+        </header> -->
+        <div class="window-content">
+            <div class="padded-more">
+                <form id="preferences-form">
+                    <div class="form-group">
+                        <i>CloudUp Username</i>
+                        <input id="cloudup-user" type="email" class="form-control" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <i>Password</i>
+                        <input id="cloudup-passwd" type="password" class="form-control" placeholder="Password" required>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="../renderer/js_bootstrap/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+<footer class="toolbar toolbar-footer" style="background-color: white !important;">
+    <div class="toolbar-actions">
+        <button id="cancel-button" class="btn btn-danger">
+            Cancel
+        </button>
+        <button id="save-button" type="submit" form="preferences-form" class="btn btn-primary pull-right">
+            Save
+        </button>
+    </div>
+</footer>
+
+</html>

@@ -15,3 +15,8 @@ footer {
 .hidden {
   display: none;
 }
+@media print {
+  footer, div.exclude_print{
+    display : none;
+  }
+}

@@ -1,13 +1,16 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, Tray , Menu, globalShortcut, protocol} = require('electron')
 const env = process.env.NODE_ENV || 'development'
-const Swal = require('sweetalert2')
-const fs = require('fs')
-const isImage = require('is-image')
-const {filesize} = require('filesize')
+const handleErrors = require('./handle-errors')
+const SetMainIpc = require('./ipcMainEvents')
+const Store = require('electron-store')
+const os = require('os')
 const path = require('path')
-var win
+Store.initRenderer()
+var win = null
+var icon_app = null
+require('@electron/remote/main').initialize()
 // If development environment
 if(env === 'development') {
     try {
@@ -17,13 +20,49 @@ if(env === 'development') {
 
     } catch (_) { console.log('Error'); }
 }
-console.dir(app);
-app.on('before-quit', () => { console.log ('Exit....')})
+
+app.on('before-quit', () => {
+   // globalShortcut.unregisterAll()
+    console.log ('Exit....')})
 app.on('ready',  () => {
+    //register protocol
+    protocol.registerFileProtocol('eleimg', (request, callback) => {
+        const url = request.url.substring(8) //eleimg:://....(name protocol has 9 characters)
+        let myurl = decodeURIComponent(url)
+        callback({path: path.normalize(myurl)}) // eslint-disable-line
+    }, (err) => {
+        if (err) throw err
+    })
+    //define an icon
+    let imageToUse = os.platform() === 'win32' ? 'ico':'png'
+    icon_app = path.join(__dirname, 'assets', 'icons', `icon_image.${imageToUse}`)
+    var tray = new Tray(icon_app)
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Show/Hide',
+            click: () => {
+                if( win.isVisible() ){
+                    win.hide()
+                }else{
+                    win.show()
+                }
+            },
+        },
+    ]);
+    tray.setToolTip('Electron Image')
+    tray.setContextMenu(contextMenu)
+    tray.on('click',() =>{
+    if( win.isVisible() ) {
+        win.hide()
+    }  else{
+        win.show()
+    }
+    })
+    //create window
     win = new BrowserWindow(
         {
-            // width:900,
-            // height:900,
+            width:900,
+            height:900,
             title: 'Ciao World',
             center: true,
             maximizable: false, //idk why it doesnt work
@@ -32,13 +71,21 @@ app.on('ready',  () => {
                 contextIsolation: false,
                 enableRemoteModule: true,
                 },
-        });
+            icon: icon_app
+        })
+   // globalShortcut.register('Ctrl+Alt+Ñ',()=>{}) //Look for a valid shortcut that doesn't overlap with OS shorcuts
+   //
+    //set Main Ipc
+    SetMainIpc(win)
+    //setupErrors
+    handleErrors(win)
     //- Show window only when content is loaded
     win.once('ready-to-show',() => {
         win.show()
     })
     //Listen to event when window is moving
     win.on('move', () => {
+        console.log(app.getPath('userData'))
         const position = win.getPosition();
         console.log(`la position es ${position}`)
     })
@@ -47,49 +94,9 @@ app.on('ready',  () => {
         win = null
         app.quit()
     })
+    require('@electron/remote/main').enable(win.webContents)
     win.loadURL(`file://${__dirname}/renderer/index.html`)
     win.webContents.openDevTools()
-})
 
-ipcMain.on('ping', function (event,args){
-    //-ipcMain.send('pong',args)
-    console.log(`ping recibido aquí main process ${args}`)
-    event.sender.send('pong',args)
-})
-ipcMain.on('open-directory', function (event){
-    //-ipcMain.send('pong',args)
-    console.log(`open directory`)
-    dialog.showOpenDialog(win, {
-        title: 'Open Directory',
-        buttonLabel: 'Select',
-        properties: ['openDirectory']
-    })
-    .then((result) => {
-        console.log(result)
-        const { canceled, filePaths } = result
-        if(canceled) {
-            return
-        }
-        const pathImage = filePaths[0]
-        fs.readdir(pathImage, function (err,files) {
-            if(err) {
-                console.log(err)
-                return
-            }
-            let images = []
-            files.forEach(function (image_file) {
-                if(isImage(image_file)) {
-                    let imageFullPath = path.join(pathImage,image_file)
-                    let stats = fs.statSync(imageFullPath)
-                    let size =  filesize(stats.size,{round: 0})
-                    images.push({filename: image_file ,src:`file://${imageFullPath}`,size:size})
-                }
-            })
-            console.log(images)
-            event.sender.send('load-images',images)
-        })
-    })
-    .catch(err =>{console.log(err)})
 
 })
-

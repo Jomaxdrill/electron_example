@@ -15,7 +15,11 @@
     "electron-reloader": "^1.2.3"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.9",
+    "cloudup-client": "^0.3.2",
+    "crypto-js": "^4.1.1",
     "electron-debug": "^3.2.0",
+    "electron-store": "^8.1.0",
     "filesize": "^10.0.5",
     "filters.css": "^1.0.0",
     "is-image": "^3.1.0",
