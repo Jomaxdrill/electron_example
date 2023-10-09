@@ -8,6 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron-forge start",
     "package": "electron-forge package",
+    "package-win": "electron-forge package --platform=win32 --arch=ia32",
+    "package-linux": "electron-forge package --platform=linux --arch=x64",
     "make": "electron-forge make"
 
   },
@@ -36,7 +38,7 @@
 
     "config": {
       "forge": {
-        "packagerConfig": {},
+        "packagerConfig": { "asar": true , "icon":"src/assets/icons/icon_image"},
         "makers": [
           {
             "name": "@electron-forge/maker-squirrel",
@@ -46,10 +48,16 @@
           },
           {
             "name": "@electron-forge/maker-deb",
-            "config": {}
+            "config": {
+              "options": {
+                "icon":"src/assets/icons/icon_image.png"
+
+            }
           }
+        }
         ]
+
+        }
       }
     }
 
-}
